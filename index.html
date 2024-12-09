@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulario de Contacto</title>
+    <link rel="stylesheet" href="styles.css">
+    <script type="module">
+        // Importar Firebase
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-app.js";
+        import { getDatabase, ref, push, onValue } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-database.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.0.0/firebase-analytics.js"; // Importar analítica
+
+        const firebaseConfig = {
+    apiKey: "AIzaSyBf55tJ9qnoKSSFP6NeRkH3UrVTGJ-Yn48",
+    authDomain: "formulariocontacto-68f30.firebaseapp.com",
+    databaseURL: "https://formulariocontacto-68f30-default-rtdb.firebaseio.com",
+    projectId: "formulariocontacto-68f30",
+    storageBucket: "formulariocontacto-68f30.firebasestorage.app",
+    messagingSenderId: "912951674032",
+    appId: "1:912951674032:web:86267568181385c645a775",
+    measurementId: "G-NPM9LL9PVQ"
+  };
+  
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const database = getDatabase(app);
+  const analytics = getAnalytics(app);
+
+  // Función para mostrar los datos en la página
+  function displayData(data) {
+            const dataContainer = document.getElementById('dataContainer');
+            dataContainer.innerHTML = ''; // Limpiar el contenedor antes de mostrar los nuevos datos
+
+            data.forEach(item => {
+                const div = document.createElement('div');
+                div.textContent = `Nombre: ${item.name}, Email: ${item.email}, Mensaje: ${item.message}`;
+                dataContainer.appendChild(div);
+            });
+        }
+
+        // Leer los datos de Firebase y mostrarlos
+        function fetchData() {
+            const contactRef = ref(database, 'contact');
+            onValue(contactRef, (snapshot) => {
+                const data = [];
+                snapshot.forEach(childSnapshot => {
+                    const childData = childSnapshot.val();
+                    data.push(childData);
+                });
+                displayData(data);
+            });
+        }
+
+        // Manejar el envío del formulario
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('contactForm');
+
+            form.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevenir el comportamiento por defecto del formulario
+
+                const name = document.getElementById('name').value;
+                const email = document.getElementById('email').value;
+                const message = document.getElementById('message').value;
+
+                // Crear un objeto con los datos del formulario
+                const data = {
+                    name: name,
+                    email: email,
+                    message: message
+                };
+
+                // Guardar los datos en Firebase
+                push(ref(database, 'contact'), data)
+                    .then(() => {
+                        alert('Mensaje guardado');
+                        form.reset(); // Limpiar el formulario
+                    })
+                    .catch((error) => {
+                        alert('Error al guardar el mensaje: ' + error.message);
+                    });
+            });
+        });
+        // Cargar los datos al inicio
+        fetchData();
+    </script>
+</head>
+<body>
+    <h1>Formulario de Contacto</h1>
+    <a href="https://cedanodev.github.io/proyectoFinal/" style="text-decoration: none;">
+        <button style="background-color: #007bff; color: white; border: none; padding: 10px 15px; margin-bottom: 10px; border-radius: 4px; cursor: pointer;">
+            Regresar
+        </button>
+    </a>
+    <form id="contactForm">
+        <input type="text" id="name" placeholder="Tu nombre" required>
+        <input type="email" id="email" placeholder="Tu correo" required>
+        <textarea id="message" placeholder="Tu mensaje" required></textarea>
+        <button type="submit">Enviar</button>
+    </form>
+    <h2>Mensajes Guardados:</h2>
+    <div id="dataContainer"></div>
+
+    <!--<script src="script.js"></script>-->
+</body>
+</html>
